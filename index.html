@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chromatic Tuner</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQ2hyb21hdGljIFR1bmVyIiwic2hvcnRfbmFtZSI6IlR1bmVyIiwiZGVzY3JpcHRpb24iOiJDaHJvbWF0aWMgaW5zdHJ1bWVudCB0dW5lciBhcHAiLCJzdGFydF91cmwiOiIuLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMxZTI5M2IiLCJ0aGVtZV9jb2xvciI6IiMzYjgyZjYiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBuYUhSMGNEb3ZMM2QzZHk1M00yNXZjbWN2TWpBd01DOXpkbWNuSUhacFpYZENiM2c5SnpBZ01DQXhNakFnTVRJd0p5QjNhV1IwYUQwbk1USXdKeUJvWldsbmFIUTlKekV5TUNjK1BHTnBjbU5zWlNCamVEMG5OakFuSUdONVBTYzJNQ2NnY2owbk5EQW5JR1pwYkd3OUoyRmtaV0pqWW5kUkp5OCtQR0ZqYVdObGJIUmdaajBuZEdGaWJHVW5QbjVhYzI1dlluYzhMMkZqYVdObGJIUmdaajQ4TDNOMlp6ND0iLCJzaXplcyI6IjEyMHgxMjAiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #cbd5e1;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        select, input[type="range"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #e2e8f0;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        select:focus, input[type="range"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        select option {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        
+        .range-container {
+            position: relative;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: linear-gradient(to right, #1e293b, #3b82f6);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s ease;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        .range-value {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .frequency-display {
+            text-align: center;
+            font-size: 2em;
+            font-weight: 700;
+            color: #3b82f6;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .play-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .play-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+        
+        .play-btn:active {
+            transform: translateY(0);
+        }
+        
+        .stop-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .stop-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+        
+        .stop-btn:active {
+            transform: translateY(0);
+        }
+        
+        .note-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .note-name {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        
+        .octave {
+            font-size: 1.2em;
+            color: #8b5cf6;
+            font-weight: 600;
+        }
+        
+        .waveform-preview {
+            height: 60px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(59, 130, 246, 0.95);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+            display: none;
+            cursor: pointer;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .play-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Chromatic Tuner</h1>
+        
+        <div class="control-group">
+            <label for="note-select">Note</label>
+            <select id="note-select">
+                <option value="C">C</option>
+                <option value="C#">C# / Db</option>
+                <option value="D">D</option>
+                <option value="D#">D# / Eb</option>
+                <option value="E">E</option>
+                <option value="F">F</option>
+                <option value="F#">F# / Gb</option>
+                <option value="G">G</option>
+                <option value="G#">G# / Ab</option>
+                <option value="A" selected>A</option>
+                <option value="A#">A# / Bb</option>
+                <option value="B">B</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="octave-range">Octave</label>
+            <div class="range-container">
+                <input type="range" id="octave-range" min="0" max="8" value="4">
+                <div class="range-value" id="octave-value">4</div>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label for="waveform-select">Waveform</label>
+            <select id="waveform-select">
+                <option value="sine">Sine Wave</option>
+                <option value="triangle">Triangle Wave</option>
+                <option value="square">Square Wave</option>
+                <option value="sawtooth">Sawtooth Wave</option>
+            </select>
+            <div class="waveform-preview" id="waveform-preview">
+                Sine Wave - Pure tone, smooth and mellow
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label for="volume-range">Volume</label>
+            <div class="range-container">
+                <input type="range" id="volume-range" min="0" max="100" value="50">
+                <div class="range-value" id="volume-value">50%</div>
+            </div>
+        </div>
+        
+        <div class="frequency-display" id="frequency-display">
+            440.00 Hz
+        </div>
+        
+        <div class="note-info">
+            <div class="note-name" id="current-note">A</div>
+            <div class="octave" id="current-octave">Octave 4</div>
+        </div>
+        
+        <div class="play-controls">
+            <button class="play-btn" id="play-btn">▶ Play</button>
+            <button class="stop-btn" id="stop-btn">⏹ Stop</button>
+        </div>
+    </div>
+    
+    <div class="install-prompt" id="install-prompt">
+        📱 Install this app for offline use!
+    </div>
+
+    <script>
+        class ChromaticTuner {
+            constructor() {
+                this.audioContext = null;
+                this.oscillator = null;
+                this.gainNode = null;
+                this.isPlaying = false;
+                
+                // Note frequencies for 4th octave (middle octave)
+                this.baseFrequencies = {
+                    'C': 261.63,
+                    'C#': 277.18,
+                    'D': 293.66,
+                    'D#': 311.13,
+                    'E': 329.63,
+                    'F': 349.23,
+                    'F#': 369.99,
+                    'G': 392.00,
+                    'G#': 415.30,
+                    'A': 440.00,
+                    'A#': 466.16,
+                    'B': 493.88
+                };
+                
+                this.waveformDescriptions = {
+                    'sine': 'Sine Wave - Pure tone, smooth and mellow',
+                    'triangle': 'Triangle Wave - Warm, soft harmonics',
+                    'square': 'Square Wave - Rich, hollow sound',
+                    'sawtooth': 'Sawtooth Wave - Bright, buzzy harmonics'
+                };
+                
+                this.initializeElements();
+                this.attachEventListeners();
+                this.updateFrequency();
+                this.initializePWA();
+            }
+            
+            initializeElements() {
+                this.noteSelect = document.getElementById('note-select');
+                this.octaveRange = document.getElementById('octave-range');
+                this.octaveValue = document.getElementById('octave-value');
+                this.waveformSelect = document.getElementById('waveform-select');
+                this.waveformPreview = document.getElementById('waveform-preview');
+                this.volumeRange = document.getElementById('volume-range');
+                this.volumeValue = document.getElementById('volume-value');
+                this.frequencyDisplay = document.getElementById('frequency-display');
+                this.currentNote = document.getElementById('current-note');
+                this.currentOctave = document.getElementById('current-octave');
+                this.playBtn = document.getElementById('play-btn');
+                this.stopBtn = document.getElementById('stop-btn');
+            }
+            
+            attachEventListeners() {
+                this.noteSelect.addEventListener('change', () => this.updateFrequency());
+                this.octaveRange.addEventListener('input', () => {
+                    this.octaveValue.textContent = this.octaveRange.value;
+                    this.updateFrequency();
+                });
+                this.waveformSelect.addEventListener('change', () => {
+                    this.updateWaveformPreview();
+                    if (this.isPlaying) {
+                        this.stop();
+                        this.play();
+                    }
+                });
+                this.volumeRange.addEventListener('input', () => {
+                    this.volumeValue.textContent = this.volumeRange.value + '%';
+                    if (this.gainNode) {
+                        this.gainNode.gain.value = this.volumeRange.value / 100;
+                    }
+                });
+                
+                this.playBtn.addEventListener('click', () => this.play());
+                this.stopBtn.addEventListener('click', () => this.stop());
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        if (this.isPlaying) {
+                            this.stop();
+                        } else {
+                            this.play();
+                        }
+                    } else if (e.code === 'Escape') {
+                        this.stop();
+                    }
+                });
+            }
+            
+            updateFrequency() {
+                const note = this.noteSelect.value;
+                const octave = parseInt(this.octaveRange.value);
+                const baseFreq = this.baseFrequencies[note];
+                
+                // Calculate frequency for the selected octave
+                // Each octave doubles the frequency
+                const frequency = baseFreq * Math.pow(2, octave - 4);
+                
+                this.frequencyDisplay.textContent = frequency.toFixed(2) + ' Hz';
+                this.currentNote.textContent = note;
+                this.currentOctave.textContent = `Octave ${octave}`;
+                
+                // Update oscillator frequency if playing
+                if (this.oscillator) {
+                    this.oscillator.frequency.value = frequency;
+                }
+            }
+            
+            updateWaveformPreview() {
+                const waveform = this.waveformSelect.value;
+                this.waveformPreview.textContent = this.waveformDescriptions[waveform];
+            }
+            
+            async initializeAudioContext() {
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+            }
+            
+            async play() {
+                try {
+                    await this.initializeAudioContext();
+                    
+                    if (this.isPlaying) {
+                        this.stop();
+                    }
+                    
+                    // Create oscillator
+                    this.oscillator = this.audioContext.createOscillator();
+                    this.gainNode = this.audioContext.createGain();
+                    
+                    // Set waveform
+                    this.oscillator.type = this.waveformSelect.value;
+                    
+                    // Set frequency
+                    const note = this.noteSelect.value;
+                    const octave = parseInt(this.octaveRange.value);
+                    const baseFreq = this.baseFrequencies[note];
+                    const frequency = baseFreq * Math.pow(2, octave - 4);
+                    this.oscillator.frequency.value = frequency;
+                    
+                    // Set volume
+                    this.gainNode.gain.value = this.volumeRange.value / 100;
+                    
+                    // Connect nodes
+                    this.oscillator.connect(this.gainNode);
+                    this.gainNode.connect(this.audioContext.destination);
+                    
+                    // Start oscillator
+                    this.oscillator.start();
+                    this.isPlaying = true;
+                    
+                    // Update UI
+                    this.playBtn.textContent = '⏸ Pause';
+                    this.playBtn.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                    
+                    // Handle oscillator end
+                    this.oscillator.onended = () => {
+                        this.isPlaying = false;
+                        this.playBtn.textContent = '▶ Play';
+                        this.playBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    };
+                    
+                } catch (error) {
+                    console.error('Error playing audio:', error);
+                    alert('Unable to play audio. Please check your browser permissions.');
+                }
+            }
+            
+            stop() {
+                if (this.oscillator) {
+                    this.oscillator.stop();
+                    this.oscillator.disconnect();
+                    this.oscillator = null;
+                }
+                
+                if (this.gainNode) {
+                    this.gainNode.disconnect();
+                    this.gainNode = null;
+                }
+                
+                this.isPlaying = false;
+                this.playBtn.textContent = '▶ Play';
+                this.playBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            }
+            
+            initializePWA() {
+                // Handle install prompt (works without service worker)
+                let deferredPrompt;
+                const installPrompt = document.getElementById('install-prompt');
+                
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    installPrompt.style.display = 'block';
+                });
+                
+                installPrompt.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+             
